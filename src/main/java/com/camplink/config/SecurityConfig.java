@@ -57,8 +57,11 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // Render liveness probe — must be reachable without a JWT.
+                // Render liveness probe
                 .requestMatchers("/actuator/health").permitAll()
+                // Swagger UI + OpenAPI spec — no auth needed to read the docs
+                .requestMatchers("/docs", "/docs/**", "/swagger-ui/**",
+                                 "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                 // Public endpoints
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()

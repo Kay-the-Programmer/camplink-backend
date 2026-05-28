@@ -74,6 +74,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- SpringDoc OpenAPI / Swagger UI — served at /docs -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+
         <!-- Actuator — /actuator/health used as Render liveness probe -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
