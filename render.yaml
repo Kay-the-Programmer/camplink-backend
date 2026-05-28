@@ -1,0 +1,81 @@
+# ── CampLink — Render Blueprint ───────────────────────────────────────────────
+# Deploy with: connect this repo in the Render dashboard → "New Blueprint".
+# Render will create the web service and the Postgres database together.
+#
+# After the first deploy:
+#   1. Set SEED_DATA=true for the very first deploy so demo data is created,
+#      then switch it back to false and redeploy.
+#   2. Set ALLOWED_ORIGINS to your frontend URL (Flutter web / PWA).
+#   3. JWT_SECRET is auto-generated — rotate it via Render dashboard if needed.
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  - type: web
+    name: camplink-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter          # upgrade to standard for more RAM / no sleep
+    region: oregon         # pick the region closest to your users
+
+    # Render routes traffic to this path to confirm the container is healthy.
+    healthCheckPath: /actuator/health
+
+    envVars:
+      # ── Port ──────────────────────────────────────────────────────────────
+      # Render injects PORT automatically; this entry makes it explicit.
+      - key: PORT
+        value: "8080"
+
+      # ── Database — wired from the Postgres service defined below ──────────
+      - key: DB_HOST
+        fromDatabase:
+          name: camplink-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: camplink-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: camplink-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: camplink-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: camplink-db
+          property: password
+
+      # ── JWT ───────────────────────────────────────────────────────────────
+      # Render generates a fresh 256-bit random value; never leave this blank.
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRY_MS
+        value: "604800000"   # 7 days
+
+      # ── File uploads ──────────────────────────────────────────────────────
+      # The Dockerfile creates /data/uploads; mount a Render Disk here
+      # (Render dashboard → your service → Disks) to persist uploaded images
+      # across deploys. Without a disk, files are wiped on every redeploy.
+      - key: UPLOAD_DIR
+        value: /data/uploads
+
+      # ── CORS ──────────────────────────────────────────────────────────────
+      # Replace * with your actual frontend URL(s) before going live.
+      # Multiple origins: https://app.example.com,https://www.example.com
+      - key: ALLOWED_ORIGINS
+        value: "*"
+
+      # ── Demo data ─────────────────────────────────────────────────────────
+      # Set to true ONLY for the first deploy on an empty database.
+      # The seeder is a no-op when users already exist, but set it back to
+      # false and redeploy once the initial seed has run.
+      - key: SEED_DATA
+        value: "false"
+
+databases:
+  - name: camplink-db
+    databaseName: camplink
+    plan: free             # upgrade to starter for daily backups + more storage

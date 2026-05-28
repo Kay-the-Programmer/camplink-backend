@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,16 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Seeds the database with demo accounts and sample data.
+ * Only runs when {@code app.seed-data=true} (env var: {@code SEED_DATA=true}).
+ * The seeder is idempotent — it skips if any users already exist.
+ *
+ * <p>Enable for first deployment or dev environments; keep disabled in production
+ * once real users have been created.</p>
+ */
 @Component
+@ConditionalOnProperty(name = "app.seed-data", havingValue = "true", matchIfMissing = false)
 @RequiredArgsConstructor
 @Slf4j
 public class DataSeeder implements ApplicationRunner {
