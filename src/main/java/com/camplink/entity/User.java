@@ -38,6 +38,21 @@ public class User {
     @Column(nullable = false)
     private boolean suspended = false;
 
+    /// Provider verification state. Null for buyers / admins (no review needed);
+    /// PENDING / APPROVED / REJECTED for seller / rider / driver accounts.
+    @Enumerated(EnumType.STRING)
+    private VerificationStatus verificationStatus;
+
+    /// Admin-supplied explanation, set when an application is rejected.
+    @Column(length = 500)
+    private String rejectionReason;
+
+    // ── Vehicle / identity details (riders & drivers only) ───────────────────
+    /// Collected for security so the admin can verify who is driving.
+    private String vehicleName;
+    private String plateNumber;
+    private String nrcNumber;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;

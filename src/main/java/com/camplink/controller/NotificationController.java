@@ -3,11 +3,13 @@ package com.camplink.controller;
 import com.camplink.dto.NotificationResponse;
 import com.camplink.repository.NotificationRepository;
 import com.camplink.service.NotificationService;
+import com.camplink.service.PushService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +24,7 @@ public class NotificationController {
 
     private final NotificationRepository notificationRepo;
     private final NotificationService notificationService;
+    private final PushService pushService;
 
     @GetMapping
     @Operation(
@@ -69,5 +72,31 @@ public class NotificationController {
     @ApiResponse(responseCode = "200", description = "All notifications marked as read")
     public void markAllRead(@AuthenticationPrincipal UserDetails ud) {
         notificationService.markAllRead(ud.getUsername());
+    }
+
+    @PostMapping("/token")
+    @Operation(
+        summary = "Register this device's push token",
+        description = "Stores the device's FCM token so the user receives push notifications. " +
+                      "Body: `{ \"token\": \"...\" }`. Call after login and on token refresh."
+    )
+    @ApiResponse(responseCode = "200", description = "Token registered")
+    public ResponseEntity<Void> registerToken(
+            @AuthenticationPrincipal UserDetails ud,
+            @RequestBody Map<String, String> body) {
+        pushService.registerToken(ud.getUsername(), body.get("token"));
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/token")
+    @Operation(
+        summary = "Unregister a device push token",
+        description = "Removes the FCM token (e.g. on logout) so the device stops receiving pushes. " +
+                      "Pass the token as the `token` query parameter."
+    )
+    @ApiResponse(responseCode = "204", description = "Token removed")
+    public ResponseEntity<Void> removeToken(@RequestParam String token) {
+        pushService.removeToken(token);
+        return ResponseEntity.noContent().build();
     }
 }

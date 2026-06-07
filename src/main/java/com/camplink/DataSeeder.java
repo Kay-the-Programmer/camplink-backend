@@ -217,6 +217,8 @@ public class DataSeeder implements ApplicationRunner {
                 .passwordHash(pw)
                 .fullName(name)
                 .role(role)
+                // Seeded providers are pre-approved so the demo works immediately.
+                .verificationStatus(role.isProvider() ? VerificationStatus.APPROVED : null)
                 .suspended(false)
                 .build();
     }

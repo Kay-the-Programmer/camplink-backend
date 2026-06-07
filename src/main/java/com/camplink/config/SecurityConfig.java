@@ -67,7 +67,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/files/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/reviews/seller/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/requests").permitAll()
+                // Ride fares are public so students see them before booking.
+                .requestMatchers(HttpMethod.GET, "/api/settings/ride-prices").permitAll()
                 // Everything else requires a valid JWT
                 .anyRequest().authenticated()
             )

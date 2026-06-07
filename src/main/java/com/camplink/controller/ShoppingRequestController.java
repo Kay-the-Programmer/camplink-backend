@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,14 +27,17 @@ public class ShoppingRequestController {
     private final ShoppingRequestService service;
 
     @GetMapping
-    @SecurityRequirements   // public — riders browse without logging in first
     @Operation(
         summary = "List all open shopping requests",
-        description = "Returns every request with status `OPEN` that riders can accept. No authentication required."
+        description = "Returns every request with status `OPEN`. Restricted to approved riders / " +
+                      "drivers (who can accept them) and admins; buyers and sellers get 403."
     )
-    @ApiResponse(responseCode = "200", description = "Open request list returned")
-    public List<ShoppingRequestResponse> open() {
-        return service.getOpen();
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Open request list returned"),
+        @ApiResponse(responseCode = "403", description = "Not an approved rider/driver or admin")
+    })
+    public List<ShoppingRequestResponse> open(@AuthenticationPrincipal UserDetails ud) {
+        return service.getOpen(ud.getUsername());
     }
 
     @GetMapping("/mine")

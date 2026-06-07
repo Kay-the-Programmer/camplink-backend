@@ -15,6 +15,7 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepo;
     private final UserRepository userRepo;
+    private final PushService pushService;
 
     @Transactional
     public void push(String userId, NotificationType type, String title, String body, String orderId) {
@@ -30,6 +31,10 @@ public class NotificationService {
                 .read(false)
                 .build();
         notificationRepo.save(n);
+
+        // Mirror the in-app notification to the user's devices (no-op if FCM
+        // isn't configured, or if the user has no registered device tokens).
+        pushService.sendToUser(userId, title, body, type.name(), orderId);
     }
 
     @Transactional

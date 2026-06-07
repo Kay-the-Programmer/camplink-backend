@@ -64,7 +64,10 @@ public class OrderService {
                 .paymentMethod(req.getPaymentMethod())
                 .paymentStatus(PaymentStatus.UNPAID)
                 .build();
-        orderRepo.save(order);
+        // saveAndFlush so the @CreationTimestamp is generated now — the response
+        // is built from this in-memory entity, and a null createdAt would break
+        // the client's JSON parsing.
+        order = orderRepo.saveAndFlush(order);
 
         notificationService.push(sellerId, NotificationType.ORDER_PLACED,
                 "New order from " + buyer.getFullName(),

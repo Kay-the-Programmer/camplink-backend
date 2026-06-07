@@ -22,4 +22,9 @@ public class RegisterRequest {
 
     @NotNull(message = "Role required (BUYER or SELLER)")
     private UserRole role;
+
+    // Required when role is RIDER or DRIVER (validated in the service).
+    private String vehicleName;
+    private String plateNumber;
+    private String nrcNumber;
 }

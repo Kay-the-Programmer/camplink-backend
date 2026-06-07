@@ -99,6 +99,34 @@ public class AdminController {
         return adminService.setRole(id, body);
     }
 
+    @PatchMapping("/users/{id}/verify")
+    @Operation(
+        summary = "Approve or reject a provider application",
+        description = "Sets a seller / rider / driver account's verification state. " +
+                      "Request body: `{ \"verificationStatus\": \"APPROVED\" }` or " +
+                      "`{ \"verificationStatus\": \"REJECTED\", \"rejectionReason\": \"...\" }`."
+    )
+    @RequestBody(
+        required = true,
+        content = @Content(
+            mediaType = "application/json",
+            schema = @Schema(example = "{\"verificationStatus\": \"APPROVED\"}")
+        )
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Verification status updated"),
+        @ApiResponse(responseCode = "400", description = "Not a provider, or invalid status"),
+        @ApiResponse(responseCode = "403", description = "Not an admin"),
+        @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    public UserResponse verify(
+            @AuthenticationPrincipal UserDetails ud,
+            @Parameter(description = "User ID") @PathVariable String id,
+            @org.springframework.web.bind.annotation.RequestBody Map<String, String> body) {
+        requireAdmin(ud);
+        return adminService.verifyProvider(id, body);
+    }
+
     @DeleteMapping("/products/{id}")
     @Operation(
         summary = "Delete any product (admin override)",

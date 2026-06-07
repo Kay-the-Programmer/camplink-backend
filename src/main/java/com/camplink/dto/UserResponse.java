@@ -2,6 +2,7 @@ package com.camplink.dto;
 
 import com.camplink.entity.User;
 import com.camplink.entity.UserRole;
+import com.camplink.entity.VerificationStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -18,6 +19,11 @@ public class UserResponse {
     private String hostel;
     private String location;
     private boolean suspended;
+    private VerificationStatus verificationStatus;
+    private String rejectionReason;
+    private String vehicleName;
+    private String plateNumber;
+    private String nrcNumber;
     private LocalDateTime createdAt;
 
     public static UserResponse from(User u) {
@@ -32,6 +38,11 @@ public class UserResponse {
         r.hostel    = u.getHostel();
         r.location  = u.getLocation();
         r.suspended = u.isSuspended();
+        r.verificationStatus = u.getVerificationStatus();
+        r.rejectionReason    = u.getRejectionReason();
+        r.vehicleName = u.getVehicleName();
+        r.plateNumber = u.getPlateNumber();
+        r.nrcNumber   = u.getNrcNumber();
         r.createdAt = u.getCreatedAt();
         return r;
     }

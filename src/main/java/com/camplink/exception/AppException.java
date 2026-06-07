@@ -24,6 +24,10 @@ public class AppException extends RuntimeException {
         return new AppException(HttpStatus.BAD_REQUEST, msg);
     }
 
+    public static AppException unauthorized(String msg) {
+        return new AppException(HttpStatus.UNAUTHORIZED, msg);
+    }
+
     public static AppException conflict(String msg) {
         return new AppException(HttpStatus.CONFLICT, msg);
     }

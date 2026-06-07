@@ -53,7 +53,15 @@ public class ShoppingRequestService {
         return ShoppingRequestResponse.from(requestRepo.save(sr));
     }
 
-    public List<ShoppingRequestResponse> getOpen() {
+    /// The open delivery pool is visible only to approved riders / drivers (who
+    /// can pick the jobs up) and admins (for moderation) — not to buyers/sellers.
+    public List<ShoppingRequestResponse> getOpen(String callerId) {
+        User caller = userRepo.findById(callerId)
+                .orElseThrow(() -> AppException.notFound("User not found"));
+        if (caller.getRole() != UserRole.ADMIN && !isApprovedRunner(caller)) {
+            throw AppException.forbidden(
+                    "Only approved riders and drivers can view delivery requests");
+        }
         return requestRepo.findByStatusOrderByCreatedAtDesc(RequestStatus.OPEN)
                 .stream().map(ShoppingRequestResponse::from).collect(Collectors.toList());
     }
@@ -78,6 +86,9 @@ public class ShoppingRequestService {
 
         User runner = userRepo.findById(runnerId)
                 .orElseThrow(() -> AppException.notFound("User not found"));
+        if (!isApprovedRunner(runner))
+            throw AppException.forbidden(
+                    "Only approved riders and drivers can accept deliveries");
         sr.setRunner(runner);
         sr.setStatus(RequestStatus.ACCEPTED);
         ShoppingRequest saved = requestRepo.save(sr);
@@ -129,5 +140,11 @@ public class ShoppingRequestService {
     private ShoppingRequest findOrThrow(String id) {
         return requestRepo.findById(id)
                 .orElseThrow(() -> AppException.notFound("Request not found"));
+    }
+
+    /// A rider or driver whose provider application has been approved.
+    private boolean isApprovedRunner(User u) {
+        return (u.getRole() == UserRole.RIDER || u.getRole() == UserRole.DRIVER)
+                && u.getVerificationStatus() == VerificationStatus.APPROVED;
     }
 }
