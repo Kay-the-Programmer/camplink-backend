@@ -14,8 +14,8 @@ services:
     name: camplink-api
     runtime: docker
     dockerfilePath: ./Dockerfile
-    plan: starter          # upgrade to standard for more RAM / no sleep
-    region: oregon         # pick the region closest to your users
+    plan: free             # free tier: sleeps after ~15 min idle, ~50s cold start
+    region: frankfurt      # closest free region to Zambia (lower latency)
 
     # Render routes traffic to this path to confirm the container is healthy.
     healthCheckPath: /actuator/health
