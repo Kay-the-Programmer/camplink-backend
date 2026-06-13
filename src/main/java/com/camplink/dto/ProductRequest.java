@@ -4,6 +4,7 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 public class ProductRequest {
@@ -20,5 +21,10 @@ public class ProductRequest {
     private BigDecimal price;
 
     private boolean available = true;
+
+    /// Legacy single image; still accepted from older clients.
     private String imageUrl;
+
+    /// Ordered image paths. When present this is the source of truth.
+    private List<String> imageUrls;
 }

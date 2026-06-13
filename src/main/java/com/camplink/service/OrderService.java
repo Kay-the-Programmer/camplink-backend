@@ -76,6 +76,17 @@ public class OrderService {
         return OrderResponse.from(order);
     }
 
+    /// Fetch a single order. Only the buyer, the seller, or an admin may view it.
+    public OrderResponse byId(String orderId, String callerId, boolean isAdmin) {
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(() -> AppException.notFound("Order not found"));
+        boolean allowed = isAdmin
+                || order.getBuyer().getId().equals(callerId)
+                || order.getSeller().getId().equals(callerId);
+        if (!allowed) throw AppException.forbidden("Not your order");
+        return OrderResponse.from(order);
+    }
+
     public List<OrderResponse> forBuyer(String buyerId) {
         return orderRepo.findByBuyerIdOrderByCreatedAtDesc(buyerId)
                 .stream().map(OrderResponse::from).toList();

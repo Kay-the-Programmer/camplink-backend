@@ -16,6 +16,7 @@ import java.util.Map;
 public class AdminService {
 
     private final UserRepository userRepo;
+    private final NotificationService notificationService;
 
     public List<UserResponse> allUsers() {
         return userRepo.findAll().stream()
@@ -74,8 +75,25 @@ public class AdminService {
         }
         user.setVerificationStatus(status);
         // Only a rejection carries a reason; clear it otherwise.
-        user.setRejectionReason(
-                status == VerificationStatus.REJECTED ? body.get("rejectionReason") : null);
-        return UserResponse.from(userRepo.save(user));
+        String reason = status == VerificationStatus.REJECTED ? body.get("rejectionReason") : null;
+        user.setRejectionReason(reason);
+        User saved = userRepo.save(user);
+
+        // Tell the applicant the outcome (in-app + push if configured).
+        if (status == VerificationStatus.APPROVED) {
+            notificationService.push(saved.getId(), NotificationType.ACCOUNT_APPROVED,
+                    "Account approved",
+                    "Your " + saved.getRole().name().toLowerCase()
+                            + " account has been approved. You can now start listing.",
+                    null);
+        } else if (status == VerificationStatus.REJECTED) {
+            notificationService.push(saved.getId(), NotificationType.ACCOUNT_REJECTED,
+                    "Application not approved",
+                    (reason != null && !reason.isBlank())
+                            ? reason
+                            : "Your provider application was not approved.",
+                    null);
+        }
+        return UserResponse.from(saved);
     }
 }

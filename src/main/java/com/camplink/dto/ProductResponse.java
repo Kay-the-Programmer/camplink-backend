@@ -5,6 +5,8 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public class ProductResponse {
@@ -17,6 +19,7 @@ public class ProductResponse {
     private BigDecimal price;
     private boolean available;
     private String imageUrl;
+    private List<String> imageUrls;
     private LocalDateTime createdAt;
 
     public static ProductResponse from(Product p) {
@@ -29,7 +32,10 @@ public class ProductResponse {
         r.category    = p.getCategory();
         r.price       = p.getPrice();
         r.available   = p.isAvailable();
-        r.imageUrl    = p.getImageUrl();
+        r.imageUrls   = p.getImageUrls() == null
+                ? new ArrayList<>() : new ArrayList<>(p.getImageUrls());
+        // Mirror the first image into the legacy single field.
+        r.imageUrl    = r.imageUrls.isEmpty() ? p.getImageUrl() : r.imageUrls.get(0);
         r.createdAt   = p.getCreatedAt();
         return r;
     }

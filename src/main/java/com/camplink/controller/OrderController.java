@@ -80,6 +80,25 @@ public class OrderController {
         return orderService.all();
     }
 
+    @GetMapping("/{id}")
+    @Operation(
+        summary = "Get a single order",
+        description = "Returns one order. Accessible to the order's buyer, its seller, or an admin."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Order returned"),
+        @ApiResponse(responseCode = "403", description = "Not your order"),
+        @ApiResponse(responseCode = "404", description = "Order not found")
+    })
+    public OrderResponse byId(
+            @AuthenticationPrincipal UserDetails ud,
+            @Parameter(description = "Order ID") @PathVariable String id) {
+        boolean admin = userRepo.findById(ud.getUsername())
+                .map(u -> u.getRole() == UserRole.ADMIN)
+                .orElse(false);
+        return orderService.byId(id, ud.getUsername(), admin);
+    }
+
     @PatchMapping("/{id}/status")
     @Operation(
         summary = "Update an order's status",

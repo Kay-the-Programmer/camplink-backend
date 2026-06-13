@@ -32,11 +32,12 @@ public class StorageController {
     @Operation(
         summary = "Upload an image file",
         description = "Accepts a multipart/form-data file upload (JPEG or PNG, max 10 MB). " +
-                      "Returns `{ \"filename\": \"uuid.jpg\", \"path\": \"/api/files/uuid.jpg\" }`. " +
-                      "Use the `path` value as the `imageUrl` when creating or updating a product."
+                      "Returns `{ \"path\": \"<reference>\" }`, where the reference is a full " +
+                      "Cloudinary `https://...` URL when Cloudinary is configured, or a host-relative " +
+                      "`/api/files/uuid.jpg` path otherwise. Store the `path` value as the product/avatar image."
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "File uploaded — filename and path returned"),
+        @ApiResponse(responseCode = "200", description = "File uploaded — path returned"),
         @ApiResponse(responseCode = "400", description = "No file provided or unsupported format"),
         @ApiResponse(responseCode = "401", description = "Missing or expired JWT")
     })
@@ -44,8 +45,7 @@ public class StorageController {
             @AuthenticationPrincipal UserDetails ud,
             @Parameter(description = "Image file (JPEG or PNG, max 10 MB)")
             @RequestParam("file") MultipartFile file) {
-        String filename = storageService.store(file);
-        return Map.of("filename", filename, "path", "/api/files/" + filename);
+        return Map.of("path", storageService.store(file));
     }
 
     @GetMapping("/files/{filename:.+}")
